@@ -141,7 +141,7 @@
         document.getElementById('portfolio-title').innerText = GITHUB_USERNAME + '.github.io';
 
         // Chiamata API con concatenazione pulita senza backtick
-        fetch('https://github.com' + GITHUB_USERNAME + '/repos?sort=updated&per_page=100')
+        fetch('https://api.github.com/users/' + GITHUB_USERNAME + '/repos?sort=updated&per_page=100')
             .then(function(response) {
                 if (!response.ok) throw new Error("Impossibile caricare i dati");
                 return response.json();
