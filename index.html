@@ -91,7 +91,7 @@
             color: var(--text-muted);
             font-size: 0.9rem;
             margin: 0 0 1.5rem 0;
-            flex-grow: 1; /* Spinge i dettagli in fondo */
+            flex-grow: 1;
         }
 
         /* Dettagli della scheda (Linguaggio e Stelle) */
@@ -124,7 +124,6 @@
 <body>
 
     <header>
-        <!-- Cambia il titolo e la descrizione con i tuoi dati -->
         <h1 id="portfolio-title">Il Mio Portfolio</h1>
         <p>Una raccolta automatica dei miei progetti GitHub</p>
     </header>
@@ -136,57 +135,56 @@
     </main>
 
     <script>
-        // ⚠️ INSERISCI IL TUO VERO NOME UTENTE GITHUB QUI SOTTO:
-        const GITHUB_USERNAME = 'iacosoft';
+        var GITHUB_USERNAME = 'iacosoft';
 
-        // Aggiorna dinamicamente il titolo del portfolio
-        document.getElementById('portfolio-title').innerText = `${GITHUB_USERNAME}.github.io`;
+        // Aggiorna il titolo del portfolio usando la concatenazione classica
+        document.getElementById('portfolio-title').innerText = GITHUB_USERNAME + '.github.io';
 
-        // Recupera i dati dalle API pubbliche di GitHub
-        fetch(`https://github.com{GITHUB_USERNAME}/repos?sort=updated&per_page=100`)
-            .then(response => {
+        // Chiamata API con concatenazione pulita senza backtick
+        fetch('https://github.com' + GITHUB_USERNAME + '/repos?sort=updated&per_page=100')
+            .then(function(response) {
                 if (!response.ok) throw new Error("Impossibile caricare i dati");
                 return response.json();
             })
-            .then(repos => {
-                const grid = document.getElementById('projects-grid');
-                grid.innerHTML = ''; // Rimuove il testo di caricamento
+            .then(function(repos) {
+                var grid = document.getElementById('projects-grid');
+                grid.innerHTML = ''; 
 
                 // Filtra per escludere i fork e il repository del portfolio stesso
-                const filteredRepos = repos.filter(repo => 
-                    !repo.fork && repo.name.toLowerCase() !== `${GITHUB_USERNAME}.github.io`.toLowerCase()
-                );
+                var targetRepoName = (GITHUB_USERNAME + '.github.io').toLowerCase();
+                var filteredRepos = repos.filter(function(repo) {
+                    return !repo.fork && repo.name.toLowerCase() !== targetRepoName;
+                });
 
                 if (filteredRepos.length === 0) {
                     grid.innerHTML = '<div class="loading">Nessun repository pubblico trovato.</div>';
                     return;
                 }
 
-                // Genera le card HTML per ogni repository trovato
-                filteredRepos.forEach(repo => {
-                    const card = document.createElement('div');
+                // Genera le card inserendo le variabili in modo sicuro
+                filteredRepos.forEach(function(repo) {
+                    var card = document.createElement('div');
                     card.className = 'card';
 
-                    // Gestione del linguaggio (se non rilevato mostra 'Varie')
-                    const language = repo.language ? repo.language : 'Varie';
-                    
-                    // Gestione della descrizione mancante
-                    const description = repo.description ? repo.description : 'Nessuna descrizione inserita per questo progetto.';
+                    var language = repo.language ? repo.language : 'Varie';
+                    var description = repo.description ? repo.description : 'Nessuna descrizione inserita per questo progetto.';
 
-                    card.innerHTML = `
-                        <div>
-                            <h3><a href="${repo.html_url}" target="_blank">${repo.name}</a></h3>
-                            <p>${description}</p>
-                        </div>
-                        <div class="card-footer">
-                            <span class="lang-tag">${language}</span>
-                            <span>⭐ ${repo.stargazers_count}</span>
-                        </div>
-                    `;
+                    // Costruzione della card con stringhe classiche concatenate
+                    var htmlContent = '';
+                    htmlContent += '<div>';
+                    htmlContent += '<h3><a href="' + repo.html_url + '" target="_blank">' + repo.name + '</a></h3>';
+                    htmlContent += '<p>' + description + '</p>';
+                    htmlContent += '</div>';
+                    htmlContent += '<div class="card-footer">';
+                    htmlContent += '<span class="lang-tag">' + language + '</span>';
+                    htmlContent += '<span>⭐ ' + repo.stargazers_count + '</span>';
+                    htmlContent += '</div>';
+
+                    card.innerHTML = htmlContent;
                     grid.appendChild(card);
                 });
             })
-            .catch(error => {
+            .catch(function(error) {
                 console.error(error);
                 document.getElementById('projects-grid').innerHTML = 
                     '<div class="loading" style="color: red;">Errore nel caricamento dei progetti. Verifica l\'username.</div>';
