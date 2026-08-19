@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il Mio Portfolio Progetti</title>
+    <style>
+        /* Stili Generali */
+        :root {
+            --bg-color: #f6f8fa;
+            --card-bg: #ffffff;
+            --text-color: #24292f;
+            --text-muted: #57606a;
+            --primary: #0969da;
+            --border-color: #d0d7de;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        header {
+            background-color: #24292f;
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            color: #8c959f;
+            font-size: 1.2rem;
+            margin: 0.5rem 0 0 0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Griglia dei Progetti */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Stile delle Schede (Card) */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+        }
+
+        .card h3 a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .card h3 a:hover {
+            text-decoration: underline;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 1.5rem 0;
+            flex-grow: 1; /* Spinge i dettagli in fondo */
+        }
+
+        /* Dettagli della scheda (Linguaggio e Stelle) */
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .lang-tag {
+            background-color: #ddf4ff;
+            color: #0969da;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+        }
+
+        /* Animazione di caricamento */
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+            color: var(--text-muted);
+            padding: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Cambia il titolo e la descrizione con i tuoi dati -->
+        <h1 id="portfolio-title">Il Mio Portfolio</h1>
+        <p>Una raccolta automatica dei miei progetti GitHub</p>
+    </header>
+
+    <main>
+        <div class="grid" id="projects-grid">
+            <div class="loading">Sincronizzazione con GitHub in corso...</div>
+        </div>
+    </main>
+
+    <script>
+        // ⚠️ INSERISCI IL TUO VERO NOME UTENTE GITHUB QUI SOTTO:
+        const GITHUB_USERNAME = 'iacosoft';
+
+        // Aggiorna dinamicamente il titolo del portfolio
+        document.getElementById('portfolio-title').innerText = `${GITHUB_USERNAME}.github.io`;
+
+        // Recupera i dati dalle API pubbliche di GitHub
+        fetch(`https://github.com{GITHUB_USERNAME}/repos?sort=updated&per_page=100`)
+            .then(response => {
+                if (!response.ok) throw new Error("Impossibile caricare i dati");
+                return response.json();
+            })
+            .then(repos => {
+                const grid = document.getElementById('projects-grid');
+                grid.innerHTML = ''; // Rimuove il testo di caricamento
+
+                // Filtra per escludere i fork e il repository del portfolio stesso
+                const filteredRepos = repos.filter(repo => 
+                    !repo.fork && repo.name.toLowerCase() !== `${GITHUB_USERNAME}.github.io`.toLowerCase()
+                );
+
+                if (filteredRepos.length === 0) {
+                    grid.innerHTML = '<div class="loading">Nessun repository pubblico trovato.</div>';
+                    return;
+                }
+
+                // Genera le card HTML per ogni repository trovato
+                filteredRepos.forEach(repo => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    // Gestione del linguaggio (se non rilevato mostra 'Varie')
+                    const language = repo.language ? repo.language : 'Varie';
+                    
+                    // Gestione della descrizione mancante
+                    const description = repo.description ? repo.description : 'Nessuna descrizione inserita per questo progetto.';
+
+                    card.innerHTML = `
+                        <div>
+                            <h3><a href="${repo.html_url}" target="_blank">${repo.name}</a></h3>
+                            <p>${description}</p>
+                        </div>
+                        <div class="card-footer">
+                            <span class="lang-tag">${language}</span>
+                            <span>⭐ ${repo.stargazers_count}</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('projects-grid').innerHTML = 
+                    '<div class="loading" style="color: red;">Errore nel caricamento dei progetti. Verifica l\'username.</div>';
+            });
+    </script>
+
+</body>
+</html>
